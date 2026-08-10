@@ -1,0 +1,180 @@
+/* General Page */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 30px;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #222;
+}
+
+/* Main Heading */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #123b5d;
+}
+
+/* Sections */
+section {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+h2 {
+    color: #123b5d;
+    margin-top: 0;
+}
+
+/* Search Area */
+#countryInput {
+    width: 70%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+#searchButton {
+    padding: 12px 20px;
+    margin-left: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #123b5d;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#searchButton:hover {
+    background: #0d2c45;
+}
+
+#searchButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading Message */
+#loadingMessage {
+    text-align: center;
+    font-weight: bold;
+    color: #123b5d;
+    min-height: 20px;
+}
+
+/* Error Message */
+#errorMessage {
+    max-width: 800px;
+    margin: 10px auto;
+    color: #c62828;
+    font-weight: bold;
+}
+
+/* Country Card */
+#countryCard {
+    text-align: center;
+}
+
+#countryFlag {
+    display: block;
+    width: 300px;
+    max-width: 100%;
+    height: 180px;
+    object-fit: cover;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+#countryName {
+    font-size: 28px;
+    color: #123b5d;
+}
+
+#countryCard p {
+    font-size: 17px;
+    margin: 12px 0;
+}
+
+/* AI Section */
+#interestingButton {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #6a1b9a;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#interestingButton:hover {
+    background: #4a126c;
+}
+
+#interestingButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#aiResponse {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f3eafa;
+    border-left: 4px solid #6a1b9a;
+    border-radius: 6px;
+    line-height: 1.6;
+}
+
+/* Recent Searches */
+#recentSearches {
+    list-style: none;
+    padding: 0;
+}
+
+#recentSearches li {
+    padding: 12px;
+    margin: 8px 0;
+    background: #eef3f8;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #123b5d;
+    font-weight: bold;
+}
+
+#recentSearches li:hover {
+    background: #dce8f2;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+
+    body {
+        padding: 15px;
+    }
+
+    section {
+        padding: 18px;
+    }
+
+    #countryInput {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    #searchButton {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    #countryFlag {
+        height: auto;
+    }
+}

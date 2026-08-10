@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI-Powered Country Explorer</title>
+
+    <!-- Connect CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>AI-Powered Country Explorer</h1>
+
+        <!-- Search -->
+        <section class="card search-section">
+
+            <h2>Search for a Country</h2>
+
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="countryInput"
+                    placeholder="Enter country name"
+                >
+
+                <button id="searchButton">
+                    Search
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- Loading -->
+        <div id="loadingMessage"></div>
+
+        <!-- Error -->
+        <div id="errorMessage"></div>
+
+        <!-- Country Information -->
+        <section id="countryCard" class="card">
+
+            <h2>Country Information</h2>
+
+            <img
+                id="countryFlag"
+                src=""
+                alt="Country flag"
+            >
+
+            <h3 id="countryName">
+                Country Name
+            </h3>
+
+            <div class="country-details">
+
+                <p>
+                    <strong>Capital:</strong>
+                    <span id="countryCapital"></span>
+                </p>
+
+                <p>
+                    <strong>Population:</strong>
+                    <span id="countryPopulation"></span>
+                </p>
+
+                <p>
+                    <strong>Region:</strong>
+                    <span id="countryRegion"></span>
+                </p>
+
+                <p>
+                    <strong>Languages:</strong>
+                    <span id="countryLanguages"></span>
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- AI Information -->
+        <section class="card ai-section">
+
+            <h2>🤖 AI Country Information</h2>
+
+            <button id="interestingButton">
+                Tell me something interesting
+            </button>
+
+            <div id="aiResponse"></div>
+
+        </section>
+
+        <!-- Recent Searches -->
+        <section class="card">
+
+            <h2>Recent Searches</h2>
+
+            <ul id="recentSearches"></ul>
+
+        </section>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
