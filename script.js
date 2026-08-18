@@ -17,7 +17,8 @@ const countryLanguages = document.getElementById("countryLanguages");
 
 const recentSearches = document.getElementById("recentSearches");
 
-const REST_COUNTRIES_API_KEY = "rc_live_cedd56130fb94f2b9071e0020f427195";
+const REST_COUNTRIES_API_KEY = "";
+const OPENROUTER_API_KEY = "";
 
 let recentCountries = [];
 
@@ -26,7 +27,6 @@ interestingButton.disabled = true;
 
 interestingButton.addEventListener("click", getInterestingFact);
 searchButton.addEventListener("click", searchCountry);
-
 
 async function searchCountry() {
 
@@ -54,8 +54,14 @@ async function searchCountry() {
             }
         );
 
+        console.log("REST Countries status:", response.status);
+
         if (response.status === 404) {
             throw new Error("COUNTRY_NOT_FOUND");
+        }
+
+        if (response.status === 401 || response.status === 403) {
+            throw new Error("REST_API_AUTH_ERROR");
         }
 
         if (!response.ok) {
@@ -63,6 +69,8 @@ async function searchCountry() {
         }
 
         const data = await response.json();
+
+        console.log("REST Countries data:", data);
 
         if (
             !data ||
@@ -75,10 +83,12 @@ async function searchCountry() {
 
         const countryData = data.data.objects[0];
 
-        countryFlag.src = countryData.flag.url_png;
-        countryFlag.alt = `${countryData.names.common} flag`;
+        countryFlag.src = countryData.flag?.url_png || "";
+        countryFlag.alt =
+            `${countryData.names?.common || country} flag`;
 
-        countryName.textContent = countryData.names.common;
+        countryName.textContent =
+            countryData.names?.common || "N/A";
 
         countryCapital.textContent =
             countryData.capitals &&
@@ -87,22 +97,27 @@ async function searchCountry() {
                 : "N/A";
 
         countryPopulation.textContent =
-            countryData.population
+            typeof countryData.population === "number"
                 ? countryData.population.toLocaleString()
                 : "N/A";
 
         countryRegion.textContent =
             countryData.region || "N/A";
 
-        countryLanguages.textContent =
+        if (
             countryData.languages &&
+            Array.isArray(countryData.languages) &&
             countryData.languages.length > 0
-                ? countryData.languages
+        ) {
+            countryLanguages.textContent =
+                countryData.languages
                     .map(function(language) {
                         return language.name;
                     })
-                    .join(", ")
-                : "N/A";
+                    .join(", ");
+        } else {
+            countryLanguages.textContent = "N/A";
+        }
 
         addRecentCountry(countryData.names.common);
 
@@ -110,15 +125,21 @@ async function searchCountry() {
 
     } catch (error) {
 
+        console.error("Country API error:", error);
+
         if (error.message === "COUNTRY_NOT_FOUND") {
 
             errorMessage.textContent = "Country not found";
+
+        } else if (error.message === "REST_API_AUTH_ERROR") {
+
+            errorMessage.textContent =
+                "Country API authentication failed. Please check your API key.";
 
         } else {
 
             errorMessage.textContent =
                 "Sorry, we couldn't load the country information. Please try again.";
-
         }
 
         countryFlag.src = "";
@@ -132,8 +153,6 @@ async function searchCountry() {
 
         interestingButton.disabled = true;
 
-        console.error(error);
-
     } finally {
 
         loadingMessage.textContent = "";
@@ -141,7 +160,6 @@ async function searchCountry() {
 
     }
 }
-
 
 function addRecentCountry(country) {
 
@@ -159,7 +177,6 @@ function addRecentCountry(country) {
 
     displayRecentCountries();
 }
-
 
 function displayRecentCountries() {
 
@@ -182,7 +199,6 @@ function displayRecentCountries() {
 
     });
 }
-
 
 async function getInterestingFact() {
 
@@ -211,7 +227,7 @@ async function getInterestingFact() {
 
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer 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"
+                    "Authorization": `Bearer ${OPENROUTER_API_KEY}`
                 },
 
                 body: JSON.stringify({
@@ -226,6 +242,8 @@ async function getInterestingFact() {
                 })
             }
         );
+
+        console.log("OpenRouter status:", response.status);
 
         if (!response.ok) {
             throw new Error("OPENROUTER_API_ERROR");
@@ -246,10 +264,10 @@ async function getInterestingFact() {
 
     } catch (error) {
 
+        console.error("OpenRouter error:", error);
+
         aiResponse.textContent =
             "Sorry, we couldn't get an AI response right now. Please try again.";
-
-        console.error(error);
 
     } finally {
 
