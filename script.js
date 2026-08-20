@@ -17,192 +17,470 @@ const countryLanguages = document.getElementById("countryLanguages");
 
 const recentSearches = document.getElementById("recentSearches");
 
-const REST_COUNTRIES_API_KEY = "";
-const OPENROUTER_API_KEY = "";
+
+// ===============================
+// REST COUNTRIES API KEY
+// ===============================
+
+const REST_COUNTRIES_API_KEY =
+    "rc_live_cedd56130fb94f2b9071e0020f427195";
+
+
+// ===============================
+// SUPABASE EDGE FUNCTION
+// ===============================
+
+const SUPABASE_FUNCTION_URL =
+    "https://erexplmmvogurrbaxkix.supabase.co/functions/v1/interesting-fact";
+
+
+// ===============================
+// VARIABLES
+// ===============================
 
 let recentCountries = [];
 
+
+// ===============================
+// INITIAL STATE
+// ===============================
+
 loadingMessage.textContent = "";
+errorMessage.textContent = "";
+aiResponse.textContent = "";
+
 interestingButton.disabled = true;
 
-interestingButton.addEventListener("click", getInterestingFact);
-searchButton.addEventListener("click", searchCountry);
+
+// ===============================
+// EVENT LISTENERS
+// ===============================
+
+interestingButton.addEventListener(
+    "click",
+    getInterestingFact
+);
+
+searchButton.addEventListener(
+    "click",
+    searchCountry
+);
+
+
+// Allow Enter key to search
+
+countryInput.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key === "Enter") {
+
+            searchCountry();
+
+        }
+
+    }
+);
+
+
+// ===============================
+// SEARCH COUNTRY
+// ===============================
 
 async function searchCountry() {
 
-    const country = countryInput.value.trim();
+    const country =
+        countryInput.value.trim();
+
+
+    // Check empty input
 
     if (country === "") {
-        errorMessage.textContent = "Please enter a country name";
+
+        errorMessage.textContent =
+            "Please enter a country name";
+
         return;
     }
 
-    loadingMessage.textContent = "Loading...";
+
+    // Show loading
+
+    loadingMessage.textContent =
+        "Loading...";
+
     searchButton.disabled = true;
+
     interestingButton.disabled = true;
+
     errorMessage.textContent = "";
+
     aiResponse.textContent = "";
+
 
     try {
 
+        // ===============================
+        // REST COUNTRIES API
+        // ===============================
+
         const response = await fetch(
-            `https://api.restcountries.com/countries/v5/names.common/${encodeURIComponent(country)}`,
-            {
-                headers: {
-                    "Authorization": `Bearer ${REST_COUNTRIES_API_KEY}`
-                }
-            }
+            `https://api.restcountries.com/countries/v5/names.common/${encodeURIComponent(country)}?api-key=${REST_COUNTRIES_API_KEY}`
         );
 
-        console.log("REST Countries status:", response.status);
+
+        console.log(
+            "REST Countries status:",
+            response.status
+        );
+
+
+        // Country not found
 
         if (response.status === 404) {
-            throw new Error("COUNTRY_NOT_FOUND");
+
+            throw new Error(
+                "COUNTRY_NOT_FOUND"
+            );
+
         }
 
-        if (response.status === 401 || response.status === 403) {
-            throw new Error("REST_API_AUTH_ERROR");
-        }
+
+        // Other API errors
 
         if (!response.ok) {
-            throw new Error("REST_API_ERROR");
+
+            throw new Error(
+                "REST_API_ERROR"
+            );
+
         }
 
-        const data = await response.json();
 
-        console.log("REST Countries data:", data);
+        // Convert response to JSON
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "REST Countries response:",
+            result
+        );
+
+
+        // ===============================
+        // CHECK RESPONSE
+        // ===============================
 
         if (
-            !data ||
-            !data.data ||
-            !data.data.objects ||
-            data.data.objects.length === 0
+            !result ||
+            !result.data ||
+            !Array.isArray(result.data.objects) ||
+            result.data.objects.length === 0
         ) {
-            throw new Error("COUNTRY_NOT_FOUND");
+
+            throw new Error(
+                "COUNTRY_NOT_FOUND"
+            );
+
         }
 
-        const countryData = data.data.objects[0];
 
-        countryFlag.src = countryData.flag?.url_png || "";
-        countryFlag.alt =
-            `${countryData.names?.common || country} flag`;
+        // Get first country
+
+        const countryData =
+            result.data.objects[0];
+
+
+        console.log(
+            "Country data:",
+            countryData
+        );
+
+
+        // ===============================
+        // COUNTRY NAME
+        // ===============================
+
+        const commonName =
+            countryData.names?.common ||
+            country;
+
 
         countryName.textContent =
-            countryData.names?.common || "N/A";
+            commonName;
 
-        countryCapital.textContent =
+
+        // ===============================
+        // FLAG
+        // ===============================
+
+        countryFlag.src =
+            countryData.flag?.url_png ||
+            countryData.flag?.url_svg ||
+            "";
+
+        countryFlag.alt =
+            `${commonName} flag`;
+
+
+        // ===============================
+        // CAPITAL
+        // ===============================
+
+        if (
             countryData.capitals &&
+            Array.isArray(countryData.capitals) &&
             countryData.capitals.length > 0
-                ? countryData.capitals[0].name
-                : "N/A";
+        ) {
 
-        countryPopulation.textContent =
-            typeof countryData.population === "number"
-                ? countryData.population.toLocaleString()
-                : "N/A";
+            countryCapital.textContent =
+                countryData.capitals[0]?.name ||
+                "N/A";
+
+        } else {
+
+            countryCapital.textContent =
+                "N/A";
+
+        }
+
+
+        // ===============================
+        // POPULATION
+        // ===============================
+
+        if (
+            typeof countryData.population ===
+            "number"
+        ) {
+
+            countryPopulation.textContent =
+                countryData.population.toLocaleString();
+
+        } else {
+
+            countryPopulation.textContent =
+                "N/A";
+
+        }
+
+
+        // ===============================
+        // REGION
+        // ===============================
 
         countryRegion.textContent =
-            countryData.region || "N/A";
+            countryData.region ||
+            "N/A";
+
+
+        // ===============================
+        // LANGUAGES
+        // ===============================
 
         if (
             countryData.languages &&
-            Array.isArray(countryData.languages) &&
-            countryData.languages.length > 0
+            Array.isArray(countryData.languages)
         ) {
-            countryLanguages.textContent =
+
+            const languageNames =
                 countryData.languages
-                    .map(function(language) {
+                    .map(function (language) {
+
                         return language.name;
+
                     })
-                    .join(", ");
+                    .filter(Boolean);
+
+
+            countryLanguages.textContent =
+                languageNames.length > 0
+                    ? languageNames.join(", ")
+                    : "N/A";
+
         } else {
-            countryLanguages.textContent = "N/A";
+
+            countryLanguages.textContent =
+                "N/A";
+
         }
 
-        addRecentCountry(countryData.names.common);
 
-        interestingButton.disabled = false;
+        // ===============================
+        // RECENT SEARCHES
+        // ===============================
+
+        addRecentCountry(
+            commonName
+        );
+
+
+        // ===============================
+        // ENABLE AI BUTTON
+        // ===============================
+
+        interestingButton.disabled =
+            false;
+
 
     } catch (error) {
 
-        console.error("Country API error:", error);
+        console.error(
+            "Country API error:",
+            error
+        );
 
-        if (error.message === "COUNTRY_NOT_FOUND") {
 
-            errorMessage.textContent = "Country not found";
+        // ===============================
+        // ERROR MESSAGE
+        // ===============================
 
-        } else if (error.message === "REST_API_AUTH_ERROR") {
+        if (
+            error.message ===
+            "COUNTRY_NOT_FOUND"
+        ) {
 
             errorMessage.textContent =
-                "Country API authentication failed. Please check your API key.";
+                "Country not found";
 
         } else {
 
             errorMessage.textContent =
                 "Sorry, we couldn't load the country information. Please try again.";
+
         }
 
+
+        // ===============================
+        // CLEAR COUNTRY INFORMATION
+        // ===============================
+
         countryFlag.src = "";
-        countryFlag.alt = "Country flag";
+
+        countryFlag.alt =
+            "Country flag";
 
         countryName.textContent = "";
+
         countryCapital.textContent = "";
+
         countryPopulation.textContent = "";
+
         countryRegion.textContent = "";
+
         countryLanguages.textContent = "";
 
-        interestingButton.disabled = true;
+
+        // Disable AI button
+
+        interestingButton.disabled =
+            true;
 
     } finally {
 
         loadingMessage.textContent = "";
+
         searchButton.disabled = false;
 
     }
 }
 
+
+// ===============================
+// ADD RECENT COUNTRY
+// ===============================
+
 function addRecentCountry(country) {
 
-    recentCountries = recentCountries.filter(
-        function(item) {
-            return item !== country;
-        }
+    // Remove duplicate
+
+    recentCountries =
+        recentCountries.filter(
+            function (item) {
+
+                return item !== country;
+
+            }
+        );
+
+
+    // Add newest country first
+
+    recentCountries.unshift(
+        country
     );
 
-    recentCountries.unshift(country);
+
+    // Keep only latest 5
 
     if (recentCountries.length > 5) {
+
         recentCountries.pop();
+
     }
+
 
     displayRecentCountries();
 }
+
+
+// ===============================
+// DISPLAY RECENT COUNTRIES
+// ===============================
 
 function displayRecentCountries() {
 
     recentSearches.innerHTML = "";
 
-    recentCountries.forEach(function(country) {
 
-        const listItem = document.createElement("li");
+    recentCountries.forEach(
+        function (country) {
 
-        listItem.textContent = country;
+            const listItem =
+                document.createElement("li");
 
-        listItem.addEventListener("click", function() {
 
-            countryInput.value = country;
-            searchCountry();
+            listItem.textContent =
+                country;
 
-        });
 
-        recentSearches.appendChild(listItem);
+            // Click recent search
 
-    });
+            listItem.addEventListener(
+                "click",
+                function () {
+
+                    countryInput.value =
+                        country;
+
+                    searchCountry();
+
+                }
+            );
+
+
+            recentSearches.appendChild(
+                listItem
+            );
+
+        }
+    );
 }
+
+
+// ===============================
+// AI INTERESTING FACT
+// ===============================
 
 async function getInterestingFact() {
 
-    const country = countryName.textContent.trim();
+    const country =
+        countryName.textContent.trim();
+
+
+    // Check country
 
     if (!country) {
 
@@ -210,68 +488,110 @@ async function getInterestingFact() {
             "Please search for a country first.";
 
         return;
+
     }
 
-    aiResponse.textContent = "Loading...";
-    interestingButton.disabled = true;
 
-    const prompt =
-        `Tell me one fascinating historical fact about ${country} in 2 sentences.`;
+    // Show loading
+
+    aiResponse.textContent =
+        "Loading...";
+
+    interestingButton.disabled =
+        true;
+
 
     try {
 
+        // ===============================
+        // CALL SUPABASE EDGE FUNCTION
+        // ===============================
+
         const response = await fetch(
-            "https://openrouter.ai/api/v1/chat/completions",
+            SUPABASE_FUNCTION_URL,
             {
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENROUTER_API_KEY}`
+                    "Content-Type":
+                        "application/json"
                 },
 
                 body: JSON.stringify({
-                    model: "nvidia/nemotron-3-super-120b-a12b:free",
 
-                    messages: [
-                        {
-                            role: "user",
-                            content: prompt
-                        }
-                    ]
+                    country: country
+
                 })
+
             }
         );
 
-        console.log("OpenRouter status:", response.status);
+
+        console.log(
+            "Supabase function status:",
+            response.status
+        );
+
+
+        // ===============================
+        // CONVERT RESPONSE
+        // ===============================
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Supabase function response:",
+            data
+        );
+
+
+        // ===============================
+        // CHECK RESPONSE
+        // ===============================
 
         if (!response.ok) {
-            throw new Error("OPENROUTER_API_ERROR");
+
+            throw new Error(
+                "SUPABASE_FUNCTION_ERROR"
+            );
+
         }
 
-        const data = await response.json();
 
-        if (
-            !data.choices ||
-            !data.choices[0] ||
-            !data.choices[0].message
-        ) {
-            throw new Error("OPENROUTER_API_ERROR");
+        if (!data.answer) {
+
+            throw new Error(
+                "NO_AI_RESPONSE"
+            );
+
         }
+
+
+        // ===============================
+        // DISPLAY AI RESPONSE
+        // ===============================
 
         aiResponse.textContent =
-            data.choices[0].message.content;
+            data.answer;
+
 
     } catch (error) {
 
-        console.error("OpenRouter error:", error);
+        console.error(
+            "Supabase function error:",
+            error
+        );
+
 
         aiResponse.textContent =
             "Sorry, we couldn't get an AI response right now. Please try again.";
 
     } finally {
 
-        interestingButton.disabled = false;
+        interestingButton.disabled =
+            false;
 
     }
 }
