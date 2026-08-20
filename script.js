@@ -19,14 +19,6 @@ const recentSearches = document.getElementById("recentSearches");
 
 
 // ===============================
-// REST COUNTRIES API KEY
-// ===============================
-
-const REST_COUNTRIES_API_KEY =
-    "rc_live_cedd56130fb94f2b9071e0020f427195";
-
-
-// ===============================
 // SUPABASE EDGE FUNCTION
 // ===============================
 
@@ -121,21 +113,54 @@ async function searchCountry() {
     try {
 
         // ===============================
-        // REST COUNTRIES API
+        // CALL SUPABASE EDGE FUNCTION
         // ===============================
 
         const response = await fetch(
-            `https://api.restcountries.com/countries/v5/names.common/${encodeURIComponent(country)}?api-key=${REST_COUNTRIES_API_KEY}`
+            SUPABASE_FUNCTION_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    action: "country",
+
+                    country: country
+
+                })
+
+            }
         );
 
 
         console.log(
-            "REST Countries status:",
+            "Supabase country status:",
             response.status
         );
 
 
-        // Country not found
+        // ===============================
+        // CONVERT RESPONSE TO JSON
+        // ===============================
+
+        const result =
+            await response.json();
+
+
+        console.log(
+            "Supabase country response:",
+            result
+        );
+
+
+        // ===============================
+        // COUNTRY NOT FOUND
+        // ===============================
 
         if (response.status === 404) {
 
@@ -146,27 +171,22 @@ async function searchCountry() {
         }
 
 
-        // Other API errors
+        // ===============================
+        // API ERROR
+        // ===============================
 
         if (!response.ok) {
+
+            console.error(
+                "Country API error response:",
+                result
+            );
 
             throw new Error(
                 "REST_API_ERROR"
             );
 
         }
-
-
-        // Convert response to JSON
-
-        const result =
-            await response.json();
-
-
-        console.log(
-            "REST Countries response:",
-            result
-        );
 
 
         // ===============================
@@ -187,7 +207,9 @@ async function searchCountry() {
         }
 
 
-        // Get first country
+        // ===============================
+        // GET COUNTRY DATA
+        // ===============================
 
         const countryData =
             result.data.objects[0];
@@ -382,7 +404,8 @@ async function searchCountry() {
 
         loadingMessage.textContent = "";
 
-        searchButton.disabled = false;
+        searchButton.disabled =
+            false;
 
     }
 }
@@ -519,6 +542,8 @@ async function getInterestingFact() {
 
                 body: JSON.stringify({
 
+                    action: "fact",
+
                     country: country
 
                 })
@@ -528,7 +553,7 @@ async function getInterestingFact() {
 
 
         console.log(
-            "Supabase function status:",
+            "Supabase AI status:",
             response.status
         );
 
@@ -542,7 +567,7 @@ async function getInterestingFact() {
 
 
         console.log(
-            "Supabase function response:",
+            "Supabase AI response:",
             data
         );
 
